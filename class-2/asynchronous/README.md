@@ -44,7 +44,7 @@ contract BankContract {
 - Assign an ID to each client whenever they join the contract, so define an `int` counter and set it to 0 in the constructor of the contract.
 
 ```js
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.10;
 contract BankContract {
     struct client_account{
         int client_id;
@@ -88,7 +88,7 @@ contract BankContract {
 - Before implementing all of the methods we need to organize the smart contract, we have to implement two modifiers. Both methods will check the people who call the relevant method and which of the modifiers is used. One of them determines whether the sender is the manager, and the other one determines whether the sender is a client.
 
 ```js
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.10;
 contract BankContract {
     struct client_account{
         int client_id;
@@ -131,7 +131,7 @@ contract BankContract {
 - Since we’ll receive ether from the clients as a deposit, we need to implement the `fallback function`.
 
 ```js
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.10;
 contract BankContract {
     struct client_account{
         int client_id;
@@ -244,7 +244,7 @@ function getContractBalance() public view returns(uint){
 - Final contract
 
 ```js
-pragma solidity ^0.6.6;
+pragma solidity ^0.6.10;
 
 contract BankContract {
     
