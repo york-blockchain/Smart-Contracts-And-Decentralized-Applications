@@ -21,6 +21,8 @@ Develop Simple Payment Channel
 2. The sender signs messages that specify how much of that ether is owed to the recipient. This step is repeated for each payment.
 3. The recipient “closes” the payment channel, withdrawing their portion of the ether and sending the remainder back to the sender.
 
+![payment channel](./assets/payment-channel.png)
+
 - Importantly, only steps 1 and 3 require Ethereum transactions. 
 - Step 2 is accomplished off-chain through cryptographic signatures and some sort of communication between the two parties, such as email. 
 - Only two transactions are required to support any number of transfers.
