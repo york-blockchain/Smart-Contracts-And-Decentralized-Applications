@@ -187,154 +187,74 @@
 
 <section data-markdown><script type="text/template">
 
-## Functions
+  ## Primitive types
+  
+  * **uintX**: `X` is the number of bits: `uint256`, `uint32`
+  * **intX**: Same as `uintX` except signed (negatives allowed): `int256`, `int64`
+  * **bytesX**: Fixed size collection of bytes: `bytes32`
+  * **address**: An Ethereum address (20 bytes)
+  * **bool**: Boolean: `true` or `false`
+  * **string**: Dynamic-size collection of characters
+  * **bytes**: Dynamic-size collection of bytes
+  
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Math Operations
+
+- Arithmetic Operators - +,-,\*,/,%, **
+* Incremental Operators - ++, --
+* Bitwise Operators - | , ~ , >> , <<
+* Logical Operators - !, &&, ||, ==, !=
+
+</script></section>
+  
+  
+<section data-markdown><script type="text/template">
+
+## Example
 
 ```
-contract SimpleAdder {
-    function addOne(uint256 a) public pure returns(uint256) {
-        return a + 1;
-    }
+contract operators {
+  // Arithmetic Operators
+  // +,-,*,/, %, **
+  // Incremental Operators
+  // a++, a--, a+=1, a=a+1,++a,--a;
+  uint a=10;
+  a= a++; //here, output will be 10, because the value is first       
+         // returned and then then increment is done
+  a=++a;
+  //Logical Operators
+  // !, &&, ||, ==, !=
+  isOwner = true && false;
+  uint orValue= 0x02 | 0x01; // output would be 0x03
+
+  function Operators() {
+    // Initialize state variables here
+  }
 }
 ```
 
-* Functions are as in other languages:
-  * Accept parameters
-  * Perform computations and actions
-  * Optionally can return results
-
 </script></section>
 
 
-
-
 <section data-markdown><script type="text/template">
-
-## Types
-
-<pre>
-    function addOne(<span class="highlight">uint256</span> a) public pure returns(<span class="highlight">uint256</span>)
-</pre>
-
-* Parameters, return values, and variables have types that determine what they can contain
-* *uint256*
-  * unsigned (can't be negative)
-  * integer
-  * 256 bits (32 bytes)
-
-</script></section>
-
-
-
-
-
-
-<section data-markdown><script type="text/template">
-
-## Access restrictions
-
-<pre>
-    function addOne(uint256 a) <span class="highlight">public</span> pure returns(uint256)
-</pre>
-
-* Who can call the function
-  * *public*: Everyone
-  * *private*: Only other functions in this contract
-  * *external*: Everyone, except other functions in this contract
-  * *internal*: Like *private*, except for inheritance (more later)
-
-</script></section>
-
-
-
-
-
-
-<section data-markdown><script type="text/template">
-
-## Storage restrictions
-
-<pre>
-    function addOne(uint256 a) public <span class="highlight">pure</span> returns(uint256)
-</pre>
-
-* Contracts have a persistent memory called storage (or sometimes state)
-* This will preserve values between transactions
-  * *pure*: Doesn't read or write to storage
-  * *view*: Reads from storage, but does not write
-  * None: Reads and writes to storage
-
-</script></section>
-
-
-
-
-
-<section data-markdown><script type="text/template">
-
-## Primitive types
-
-* **uintX**: `X` is the number of bits: `uint256`, `uint32`
-* **intX**: Same as `uintX` except signed (negatives allowed): `int256`, `int64`
-* **bytesX**: Fixed size collection of bytes: `bytes32`
-* **address**: An Ethereum address (20 bytes)
-* **bool**: Boolean: `true` or `false`
-* **string**: Dynamic-size collection of characters
-* **bytes**: Dynamic-size collection of bytes
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-
-## 15 minute break
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-
-## constructor
-
-<pre class="hljs js">
-contract MyContract {
-    address owner;
-
-    <span class="highlight">constructor() public {
-        owner = msg.sender;
-    }</span>
-
-    function doStuff() public {
-        require(msg.sender == owner, "only owner can do stuff");
-        // do owner stuff
-    }
+  
+## Structs
+  
+```
+struct Account {
+  uint256 balance;
+  uint256 lastUpdatedTimestamp;
 }
-</pre>
-
-* Code that is run only once: when contract is created
-* Can take arguments, like a regular function
-
+```
+  
+  * For grouping together multiple values into a single new type
+  * Can contain other structs, mappings, etc
+  
 </script></section>
-
-<section data-markdown><script type="text/template">
-
-## Mappings
-
-<pre class="hljs js">
-    <span class="highlight">mapping(address => uint256) balance;</span>
-
-    function deposit() public {
-        <span class="highlight">balance[msg.sender]</span> += msg.value;
-    }
-</pre>
-
-* Like a "dictionary" or "hash-table" in other languages
-* Values are `0` by default
-* In this example:
-  * Look-up an `address`, get a `uint256`
-  * Do we need to worry about overflow here?
-
-</script></section>
-
-
-
 
 <section data-markdown><script type="text/template">
 
@@ -364,44 +284,172 @@ contract MyContract {
 </script></section>
 
 
+
 <section data-markdown><script type="text/template">
 
-## Strings
+  ## Strings
+  
+  <pre class="hljs js">
+      <span class="highlight">string</span> name = <span class="highlight">"Alice"</span>;
+  </pre>
+  
+  * Solidity supports strings, which are arbitrary length arrays of characters
+  * Try to avoid using strings, if possible
+    * Handling strings in solidity is difficult
+    * Long strings cost a lot of gas
+    * Better to store a hash of the string
+  
+</script></section>
 
-<pre class="hljs js">
-    <span class="highlight">string</span> name = <span class="highlight">"Alice"</span>;
-</pre>
 
-* Solidity supports strings, which are arbitrary length arrays of characters
-* Try to avoid using strings, if possible
-  * Handling strings in solidity is difficult
-  * Long strings cost a lot of gas
-  * Better to store a hash of the string
+<section data-markdown><script type="text/template">
 
+## DEMO : Greeter
+  
+```
+  // SPDX-License-Identifier: MIT
+  pragma solidity ^0.6.10;
+  contract Greeter {
+      // state variables
+      string yourName = "HelloWorld"; // contract storage
+      function set(string memory _name) public {
+          yourName = _name;    
+      }
+      function hello() public view returns(string memory) {
+          return yourName;
+      }
+  }
+```
+  
+</script></section>
+
+  
+<section data-markdown><script type="text/template">
+
+  ## Functions
+  
+  ```
+  contract SimpleAdder {
+      function addOne(uint256 a) public pure returns(uint256) {
+          return a + 1;
+      }
+  }
+  ```
+  
+  * Functions are as in other languages:
+    * Accept parameters
+    * Perform computations and actions
+    * Optionally can return results
+  
+</script></section>
+  
+  
+  
+  
+<section data-markdown><script type="text/template">
+  
+  ## Types
+  
+  <pre>
+      function addOne(<span class="highlight">uint256</span> a) public pure returns(<span class="highlight">uint256</span>)
+  </pre>
+  
+  * Parameters, return values, and variables have types that determine what they can contain
+  * *uint256*
+    * unsigned (can't be negative)
+    * integer
+    * 256 bits (32 bytes)
+  
+</script></section>
+  
+  
+  
+  
+  
+  
+<section data-markdown><script type="text/template">
+  
+  ## Access restrictions
+  
+  <pre>
+      function addOne(uint256 a) <span class="highlight">public</span> pure returns(uint256)
+  </pre>
+  
+  * Who can call the function
+    * *public*: Everyone
+    * *private*: Only other functions in this contract
+    * *external*: Everyone, except other functions in this contract
+    * *internal*: Like *private*, except for inheritance (more later)
+  
+</script></section>
+  
+  
+  
+  
+  
+  
+<section data-markdown><script type="text/template">
+  
+  ## Storage restrictions
+  
+  <pre>
+      function addOne(uint256 a) public <span class="highlight">pure</span> returns(uint256)
+  </pre>
+  
+  * Contracts have a persistent memory called storage (or sometimes state)
+  * This will preserve values between transactions
+    * *pure*: Doesn't read or write to storage
+    * *view*: Reads from storage, but does not write
+    * None: Reads and writes to storage
+  
+</script></section>
+  
+  
+  
+  
+  
+  
+
+
+<section data-markdown><script type="text/template">
+  
+  ## `keccak256()`
+  
+  <pre>
+    //6e91ec6b618bb462a4a6ee5aa2cb0e9cf30f7a052bb467b0ba58b8748c00d2e5
+    keccak256(abi.encodePacked("abcdef"));
+    //b1f078126895a1424524de5321b339ab00408010b7cf0e6ed451514981e58aa9
+    keccak256(abi.encodePacked("abcdee"));
+  </pre>
+  
+  * Built-in function which is a version of SHA3.
+  * `keccak256` accepts single parameter
+  
 </script></section>
 
 
 
+
+
 <section data-markdown><script type="text/template">
-
-## Structs
-
-<pre class="hljs js">
-    struct Account {
-        uint256 balance;
-        uint256 lastUpdatedTimestamp;
-    }
-
-    struct User {
-        string name;
-        mapping(address => Account) accounts;
-    }
-</pre>
-
-* For grouping together multiple values into a single new type
-* Can contain other structs, mappings, etc
-
+  
+  ## typecasting
+  
+  ```
+  uint8 a = 5;
+  uint b = 6;
+  // throws an error because a * b returns a uint, not uint8:
+  uint8 c = a * b; 
+  // we have to typecast b as a uint8 to make it work:
+  uint8 c = a * uint8(b);
+  ```
+  
+  * Conversion from one type to another is possible in solidity
+  
 </script></section>
+
+
+
 
 <section data-markdown><script type="text/template">
 
@@ -427,6 +475,49 @@ event LogDeposit(address indexed account, uint256 amount);
 
 <section data-markdown><script type="text/template">
 
+## Demo: Counter 
+  
+```
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.6.10;
+
+contract Counter {
+    
+    event ValueChanged(uint indexed oldValue, uint256 indexed newValue);
+    
+    // tracks the number of counts
+    uint256 count = 0;
+
+    // Function that increments counter
+    function increment() public {
+        count += 1;
+        emit ValueChanged(count - 1, count);
+    }
+    
+    // Getter function to get the count value
+    function getCount() public view returns (uint256) {
+        return count;
+    }
+}
+```
+  
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Example of Event logs 
+    
+<img src="event-log.jpg" width=600>
+
+* The indexed parameters for logged events will allow you to search for these events using the indexed parameters as filters.
+    
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
 ## End of Class
 
 </script></section>
@@ -441,6 +532,7 @@ event LogDeposit(address indexed account, uint256 amount);
 
     <script src="../../reveal.js/lib/js/head.min.js"></script>
     <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
 
     <script>
 
@@ -464,7 +556,7 @@ event LogDeposit(address indexed account, uint256 amount);
           { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
           { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
           { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-          { src: '../../reveal.js/plugin/math/math.js', async: true },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
         ]
       });
 
