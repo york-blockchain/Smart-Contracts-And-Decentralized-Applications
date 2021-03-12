@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 3: Solidity In-Depth - III
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Solidity Smart Contracts
+    * Gas review
+    * Arrays
+    * Control structures
+    * Contract interactions
+    * Libraries
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Gas
+    
+* In order to prevent transactions from using too many resources, they are charged *gas fees*
+* You set a gas price when you create a transaction
+* Your transaction uses a certain amount of gas when it runs
+* You are charged gas used times gas price
+* If you run out of gas, your whole transaction is rolled back
+* But you still pay the gas fee
+    
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Arrays
+
+* Arrays are sequentially indexed
+    * `.length` - # of elements in `uint256` type
+    * `.push()` - appends zero initialized element
+    * `.push(x)` - appends `x` to an array
+    * `.pop` - `delete` last element   
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Array   
+
+```
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.6.10;
+
+contract MemoryExample {
+    function getResult() public pure {
+        // instantiate a new array in memory with length of 7
+        uint[] memory a = new uint[](7);
+        bytes memory b = new bytes(len);
+        assert(a.length == 7);
+        assert(b.length == len);
+        a[6] = 8;
+    }
+}
+```   
+* `.push()` is not available with array of fixed size(This may be changed in a future version of Solidity)
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Interfaces
+    
+* An interface is an abstract contract definition that only contains function *signatures*:
+<pre class="hljs js">
+    interface VaultInterface {
+        function balance() external view returns(uint256);
+        function deposit(uint256 amount) external;
+        function withdraw(uint256 amount) external;
+    }
+</pre>
+* Then in your contract, you can convert an `address` to the interface and call functions on it:
+<pre class="hljs js">
+    VaultInterface v = VaultInterface(vaultAddr);
+    uint256 myBalance = v.balance();
+    v.deposit(2000);
+    v.withdraw(1000);
+</pre>
+    
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Interface specifications
+
+* Interfaces cannot inherit from other contracts 
+* All functions must be marked external 
+* Interfaces do not have variables or constructors
+* All functions are implicitly marked `virtual`
+* Interfaces are limited to output of contract ABI 
+* Enables to define re-usable properties 
+* Conventionally <span class="highlight">"I"</span> prefixed before contract name
+
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Incorrect interfaces
+    
+* Check your interfaces carefully: They need to exactly match what the contract specified
+    * Otherwise you may end up <a href="https://github.com/crytic/not-so-smart-contracts/tree/master/incorrect_interface" target="_blank">accidentally calling a fallback function</a>
+    * Even `int256` instead of `uint256`
+* Exception: you need to change `public` to `external`
+    
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Control structures
+
+* `for` (pseudo code)
+```
+for (initialize counter variable; guard condition; increment/decrement;) {
+    // Execute multiple instructions here
+}
+```
+
+* `do...while` (pseudo code)
+```
+// Counter variable initialization
+do {
+    // Execute the instructions here
+    // Increment/Decrement counter
+} while(guard condition)
+```
+* Also `while`, `break`, `continue`, `return`, with the usual semantics known from C or JavaScript.
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## `for`
+
+```
+function getOdds() pure external returns(uint[] memory) {
+    uint[] memory odds = new uint[](5);
+    uint counter = 0;
+    // Iterate 1 through 10 with a for loop:
+    for (uint i = 1; i <= 10; i++) {
+        if (i % 2 != 0) { // If `i` is odd...
+            // Add it to our array
+            odds[counter] = i;
+            counter++;
+        }
+    }
+    return odds;
+}
+```
+* Returns an array of odd numbers using `for` loop
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## `do..while`
+    
+```
+function getOdds() pure external returns(uint[] memory) {
+    uint[] memory odds = new uint[](5); // Keep track of the index 
+    uint counter = 0;                   // in the new array:
+    uint i = 1;
+   do { // Iterate 1 through 10 with a loop:
+        if (i % 2 != 0) { // If `i` is odd...
+            // Add it to our array
+            odds[counter] = i;
+            counter++;
+        }
+        i++;
+    } while(i <= 10);
+    return odds;
+}
+```
+* Returns an array of odd numbers using `do..while` loop
+    
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Inheritance
+* `public` and `internal` variables/functions are available in the inherited contract
+*  Modifiers in the parent contract are accessible in the child object 
+*  We can make use of events that are in our parent contract as well 
+* If the parent contract takes in parameters, Derived contracts must specify params
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## `super` keyword
+        
+```js
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.6.10;
+
+contract Charlie {
+  uint u;
+  function foo() public virtual{
+    u = 1;
+  }
+}
+
+contract Bob is Charlie {
+  function foo() public virtual override {
+    u = 2;
+  }
+}
+
+contract Alice is Bob {
+  function foo() public override {  // will set u to 3
+    u = 3;
+  }
+  function foo1() public  { // will set u to 2
+    super.foo();
+  }
+  function foo2() public { // will set u to 2
+    Bob.foo();
+  }
+  function foo3() public { // will set u to 1
+    Charlie.foo();
+  }
+}
+```
+* `super` enables access to function of base contract's immediate parent     
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Libraries
+
+* Libraries are mostly smart contract
+    * Cannot declare any state variable
+    * Cannot send `ether`
+* A library get embedded in contract if all library functions are `internal`
+    * Otherwise, a library must be deployed and linked before contract is deployed
+* The directive <span class="highlight">`using A for B;`</span> can be used to attach library functions (from the library A) to any type (B) in the context of a contract.
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Array operations library
+    
+```
+library Array {
+    function remove(uint[] storage arr, uint index) public {
+        // Move the last element into the place to delete
+        arr[index] = arr[arr.length - 1];
+        arr.pop();
+    }
+}
+```
+* Deletes element at index and reorganize the array so that there are no gaps between the elements.
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Using imports
+        
+* Inheritance
+    * `contract A is SafeMath`
+    * `uint256 a = safeAdd(b,c);`
+    * SafeMath code is compiled into the A contract
+* Libraries
+    * `contract A { using SafeMath for uint256; }`
+    * `uint256 a = b.safeAdd(c);`
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
