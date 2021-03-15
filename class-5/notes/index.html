@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 5: Solidity By Examples - I
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Solidity Smart Contracts
+    * Payable Smart Contracts
+    * Contract Factory
+    * Exception Handling
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## payable
+
+<pre class="hljs js">
+    function deposit() public <span class="highlight">payable</span> {
+        require(<span class="highlight">msg.value</span> >= 1 ether, "please send more");
+    }
+</pre>
+
+* Functions marked with `payable` can receive ether
+* If the transaction succeeds, it is added to the contract's balance
+* `msg.value` is how much was sent
+* `1 ether` is using <a href="https://solidity.readthedocs.io/en/latest/units-and-global-variables.html#ether-units" target="_blank">solidity's units feature</a>
+    * `ether` just multiplies by `1e18`
+    * Untyped! Use carefully
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Contract interactions
+
+* EOA sends ETH to an EOA
+    * Simple value transfer, no code run
+* EOA calls contract
+    * Called contract runs code which can:
+    * Send ETH
+    * Call other contracts
+    * Create contracts
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Value transfer
+
+* All ETH value transfers are transactions
+    * Functions that receive value must be marked `payable`
+    * All transactions to contracts run code
+    * If function not found, or no function name given, runs the fallback function
+    * Receive function usually used to accept (or decline) simple ETH transfers, also to log the transfer
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## `receive()`
+
+* calls made via send() or transfer() i.e. no `calldata`.
+* No arguments, no return values.
+* `external` visibility and `payable` state mutability.
+
+```
+pragma solidity ^0.5.0;
+contract Charity {
+    receive() external payable {
+        // React to receiving ether
+    }
+}
+```
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## transfer is a function call
+
+* A transaction can:
+    * Send ETH
+    * Invoke a function on a contract
+    * Deploy a contract
+* When you call `someAddr.transfer()` you are:
+    * Sending ETH
+    * *and* invoking the target's receive function (if it is a contract)
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Different ways to send ETH
+
+* `address.transfer(amount)`
+    * Throws error on failure
+    * Forwards 2,300 gas
+* `address.send(amount)`
+    * <span class="highlightRed">Returns false on failure</span>
+    * Forwards 2,300 gas
+* `address.call{value:amount}("")`
+    * <span class="highlightRed">Returns false on failure</span>
+    * <span class="highlightRed">Forwards all available gas</span>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Sending ETH
+
+<pre class="hljs js">
+    function withdrawAll() public {
+        uint256 totalAmount = <span class="highlight">address(this).balance</span>;
+        <span class="highlight">msg.sender.transfer</span>(totalAmount);
+    }
+</pre>
+
+* `this` is the current contract (and can be turned into an address)
+* `msg.sender` is also an address
+* address objects have various properties:
+    * `balance`: How much ETH is owned by this address
+    * `transfer`: Method to send ETH *to* this address
+    * `send` : Method to send ETH *to* this address
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Forwarding gas
+
+* When you call another contract, you can choose how much gas to "forward" to it
+    * Forward just means the maximum amount of your own gas you are letting it consume
+* `transfer` and `send` forwards 2,300 gas
+    * Small amount: Just enough for the `receive` function to log an event
+    * Not enough to do things like write to storage
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Limit forwarded gas
+
+* If all you want to do is send ETH, use `transfer` since it limits the amount of gas available to the receive
+    * 2,300 gas is just enough to log, but not enough to do bad things like write to storage
+* You can also manually limit the gas forwarded:
+        someContract.someFunc{gas:10000}();
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Transfer to a contract
+
+* Suppose your contract sends two payouts:
+<pre class="hljs js">
+    addr1.transfer(payout1);
+    addr2.transfer(payout2);
+</pre>
+* If `addr2` is the address of a contract, it could have a receive function like this:
+<pre class="hljs js">
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+</pre>
+* So, `addr2` causes whole transaction to fail, including payout to `addr1`
+    * Real-life example: <a href="https://www.kingoftheether.com/postmortem.html" target="_blank">King of the Ether bug</a>
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Deploy contract from a contract
+* Use <span class="highlightRed">`new`</span> keyword to deploy another contract. 
+* Recursive creation-dependencies are not possible.
+* An exception is thrown is if creation of contracts fails
+
+<pre class="hljs js">
+D newD = <span class="highlightRed">new</span> D(arg);
+</pre>
+* `address(newD)` is address of D contract 
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## require and assert
+
+* `require` is for testing conditions, like sufficient balance
+<pre class="hljs js">
+require(balance[msg.sender] >= amount, "not enough balance");
+</pre>
+* `assert` is for things you think should never happen
+    * Used by tools to analyze your program
+
+</script></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch` (1)
+* Handle external call failures
+* React on failed external calls and contract creation.
+* Cannot be used for internal function calls
+* Call public function with <span class="highlightRed">`this`</span> to make it external.
+* Eventual `out of gas` error is caught by the low-level `catch` clause. 
+* `out of gas` error is not caught if transaction executing code runs out of gas.
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(2)
+* following revert inside the try success block will revert the transaction:
+```
+function execute() public {
+    ry externalContract.someFunction() {
+        // this will revert the execution of the transaction
+        // even if the external call succeeded
+        revert();
+    } catch {
+        // ...
+    }
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(3)
+* Constructor calls
+```
+contract TryCatcher {
+    // ...
+    function execute() public {
+        try new CalledContract() returns(CalledContract returnedInstance) {
+            // returnedInstance can be used to obtain the 
+            // address of the newly deployed contract
+            emit SuccessEvent();
+        } catch {
+            emit CatchEvent();
+        }
+    }
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(4)
+* External calls
+```
+contract CalledContract {    
+    function getTwo() public returns (uint256) {
+        return 2;
+    }
+}
+contract TryCatcher {
+    CalledContract public externalContract;
+    function execute() public returns (uint256, bool) {
+        try externalContract.getTwo() returns (uint256 v) {
+            uint256 newValue = v + 2;
+            return (newValue, true);
+        } catch {
+            emit CatchEvent();
+        }		
+    }
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(5)
+* Use returned data inside catch statement
+```
+contract TryCatcher {
+    event ReturnDataEvent(bytes someData);
+    // ...
+    function execute() public returns (uint256, bool) {
+        try externalContract.someFunction() {
+            // ...
+        } catch (bytes memory returnData) {            
+            emit ReturnDataEvent(returnData);
+        }
+    }
+}
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(6)
+* revert-style exception (`require` or `revert`) error signature matches <span class="highlightRed">`catch Error`</span> block.
+<pre class="hljs">
+contract TryCatcher {
+    event ReturnDataEvent(bytes someData);
+    event CatchStringEvent(string someString);
+    event SuccessEvent();
+    // ...
+    function execute() public {
+        try externalContract.someFunction() {
+            emit SuccessEvent();
+        } <span class="highlightRed">catch Error(string memory revertReason) {
+            emit CatchStringEvent(revertReason);
+        }</span> catch (bytes memory returnData) {
+            emit ReturnDataEvent(returnData);
+        }
+    }
+}
+</pre>
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(7)
+* assert-style exception (`assert`) error signature  matches <span class="highlightRed">`catch`</span> block
+<pre class="hljs">
+contract TryCatcher {
+    event ReturnDataEvent(bytes someData);
+    event CatchStringEvent(string someString);
+    event SuccessEvent();
+    // ...
+    function execute() public {
+        try externalContract.someFunction() {
+            emit SuccessEvent();
+        } catch Error(string memory revertReason) {
+            emit CatchStringEvent(revertReason);
+        } <span class="highlightRed">catch (bytes memory returnData) {
+            emit ReturnDataEvent(returnData);
+        }</span>
+    }
+}
+</pre>
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `try/catch`(8)
+* error like overflow/underflow matches <span class="highlightRed">`catch Panic()`</span> block
+<pre class="hljs">
+contract TryCatcher {
+    event PanicErrorEvent(uint errorCode);
+    event CatchStringEvent(string someString);
+    event SuccessEvent();
+    // ...
+    function execute() public {
+        try externalContract.someFunction() {
+            emit SuccessEvent();
+        } catch Error(string memory revertReason) {
+            emit CatchStringEvent(revertReason);
+        } <span class="highlightRed">catch Panic(uint errorCode) {
+            emit PanicErrorEvent(errorCode);
+        }</span>
+    }
+}
+</pre>
+</textarea></section>
+
+
+<section data-markdown><textarea data-template>
+### `try/catch`(Panic codes)
+1. **`0x01`**: assert evaluates to false.
+2. **`0x11`**: underflow/overflow.
+3. **`0x12`**: e.g. `5/0` or `23%0`.
+4. **`0x21`**: big value conversion, negative to enum type.
+5. **`0x31`**: Call `.pop()` on an empty array.
+6. **`0x32`**: e.g. `x[i]` where i >= x.length or i < 0
+7. **`0x41`**: too much memory or create large array.
+8. **`0x51`**: zero-initialized variable of internal function type.
+</textarea></section>
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
