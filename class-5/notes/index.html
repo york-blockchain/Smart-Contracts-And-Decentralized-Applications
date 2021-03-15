@@ -103,6 +103,18 @@
 
 <section data-markdown><script type="text/template">
 
+## Value transfer
+
+* All ETH value transfers are transactions
+    * Functions that receive value must be marked `payable`
+    * All transactions to contracts run code
+    * If function not found, or no function name given, runs the fallback function
+    * Receive function usually used to accept (or decline) simple ETH transfers, also to log the transfer
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
 ## payable
 
 <pre class="hljs js">
@@ -122,6 +134,25 @@
 
 <section data-markdown><script type="text/template">
 
+## `receive()`
+
+* calls made via send() or transfer() i.e. does not contain `calldata`.
+* No arguments, no return values.
+* `external` visibility and `payable` state mutability.
+
+```
+pragma solidity ^0.5.0;
+contract Charity {
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
+}
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
 ## Contract interactions
 
 * EOA sends ETH to an EOA
@@ -133,40 +164,6 @@
     * Create contracts
 
 </script></section>
-
-<section data-markdown><script type="text/template">
-
-## Value transfer
-
-* All ETH value transfers are transactions
-    * Functions that receive value must be marked `payable`
-    * All transactions to contracts run code
-    * If function not found, or no function name given, runs the fallback function
-    * Receive function usually used to accept (or decline) simple ETH transfers, also to log the transfer
-
-</script></section>
-
-
-<section data-markdown><script type="text/template">
-
-## `receive()`
-
-* calls made via send() or transfer() i.e. no `calldata`.
-* No arguments, no return values.
-* `external` visibility and `payable` state mutability.
-
-```
-pragma solidity ^0.5.0;
-contract Charity {
-    receive() external payable {
-        // React to receiving ether
-    }
-}
-```
-
-</script></section>
-
-
 
 
 <section data-markdown><script type="text/template">
@@ -252,7 +249,7 @@ contract Charity {
 * If `addr2` is the address of a contract, it could have a receive function like this:
 <pre class="hljs js">
     receive() external payable {
-        emit Received(msg.sender, msg.value);
+        require(false)
     }
 </pre>
 * So, `addr2` causes whole transaction to fail, including payout to `addr1`
