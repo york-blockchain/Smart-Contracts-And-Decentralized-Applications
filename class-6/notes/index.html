@@ -94,6 +94,65 @@
 
 <section data-markdown><script type="text/template">
 
+## Class Plan
+* Solidity Smart Contracts
+    * Fallback function
+    * Overriding function modifier
+    * Function overloading and overriding
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## `enum`
+
+* Use to model choice and keep track of state.
+* Enums can also be declared on the file level, outside of contract or library definitions.
+* Enums cannot have more than 256 members.
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Declaring `enum`
+
+* File that the enum is declared in
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
+// File : enumDeclaration.sol
+enum Status {
+    Pending,
+    Shipped,
+    Accepted,
+    Rejected,
+    Canceled
+}
+```
+* Enums require at least one member. 
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Importing `enum`
+
+* File importing `enum`
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
+
+import "./EnumDeclaration.sol";
+
+contract Enum {
+  Status public status;
+}
+```
+* First member is default value when declared.
+</script></section>
+
+<section data-markdown><script type="text/template">
+
 ## Modifier Overriding(1)
 
 * Function modifiers can override each other. 
@@ -141,6 +200,243 @@ contract Inherited is Base1, Base2 {
     modifier foo() override(Base1, Base2) {_;}
 }
 ```
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## function overloading(1)
+
+* Multiple function with same name but different signatures
+
+```
+contract A {
+  function f(uint _in) public pure returns (uint out) {
+      out = _in;
+  }
+
+  function f(uint _in, bool _really) public pure returns (uint out) {
+    if (_really)
+      out = _in;
+  }
+}
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## function overloading(2)
+
+* error if two externally visible functions differ by their Solidity types but not by their external type
+
+```
+contract B {}
+contract A {
+    function f(B _in) public pure returns (B out) {
+        out = _in;
+    }
+
+    function f(address _in) public pure returns (address out) {
+        out = _in;
+    }
+}
+// This will not compile
+// Reason : Both function overloads above end up accepting the 
+// address type for the ABI although they are considered different 
+// inside Solidity.
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## function overriding(1)
+
+* Override base functions using inheritance to change behavior if they are marked as `virtual`. 
+* Overriding function must use the `override` keyword in the function header.
+
+```
+contract Base {
+    function foo() virtual public {}
+}
+
+contract Middle is Base {}
+
+contract Inherited is Middle {
+    function foo() public override {}
+}
+```
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## function overriding(2)
+
+* multiple inheritance
+
+```
+contract Base1 {
+    function foo() virtual public {}
+}
+
+contract Base2 {
+    function foo() virtual public {}
+}
+
+contract Inherited is Base1, Base2 {
+    // Derives from multiple bases defining foo(), 
+    // so we must explicitly override it
+    function foo() public override(Base1, Base2) {}
+}
+```
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## function overriding(3)
+
+* Public state variables can override external functions if the parameter and return types of the function matches the getter function of the variable:
+
+```
+contract A {
+    function f() external pure virtual returns(uint) { return 5; }
+}
+
+contract B is A {
+    uint public override f;
+}
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## fallback function
+
+* Does not take any arguments
+* Does not return anything.
+* It is executed either when :
+  * a function that does not exist is called or 
+  * Ether is sent directly to a contract but `receive()` does not exist
+  * fallback has a 2300 gas limit when called by `transfer` or `send`.
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## fallback function
+
+<pre class="hljs js">
+    fallback () external payable {
+        // thanks for the funds
+    }
+</pre>
+
+<pre class="hljs js">
+    fallback () external payable {
+        require(false, "please don't just send me ETH");
+    }
+</pre>
+
+* If somebody calls an unknown function, or no function at all, the *fallback function* is called
+* It's just a regular function with reserved named
+* Used to handle unknown function call, proxy contracts
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Demo : Ballot(1)
+
+* Problem statement
+
+<pre>
+An organization invites proposals for a project. A chairperson 
+organizes this process. The number of proposals is specified at 
+the time of creation of the smart contract.Chairperson registers 
+all the voters. Voters including the chairperson vote on the 
+proposals. To make things interesting, we have given a weight of 2 
+for the chairperson’s vote vs. the weight of 1 for the regular 
+voter. Winning proposal is determined and announced to the world. 
+Important details need to be recorded on the blockchain for 
+provenance.
+</pre>
+* Let's walkthrough this. You can follow along
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Demo : Ballot(2)
+* **Users** : voters, chairperson
+* **Digital assets** : 
+  * Identity of users - vote, voted, weight 
+  * list of voters 
+  * list of proposals
+* **Transactions** :register, vote(need to recorded), voteCount per proposal
+* **Roles**: chairperson and voter
+* **Phases** : Init, Register, voting, done
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Demo : Ballot(3)
+* Rules 
+  * Chairperson organizes the voting. 
+  * Voters are identified by their *account* addresses.
+  * Only chairperson can register other voters(reg phase).
+  * Voter can be registered and vote only once.
+  * Only registered voters can vote(vote phase).
+  * Voters can vote only for the items presented.
+  * Chairperson’s vote has double (2) the weight of voters(1).
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Demo : Ballot(4)
+* pseudo code
+```
+Ballot // name of contract
+struct voter { uint weight; bool voted; uint8 vote;}
+address chairperson;
+mapping(address => Voter) voters;
+struct Proposal {uint voteCount;}
+enum Phase{Init,Reg,Vote,Done}
+Proposal[] proposals
+modifier onlyChairperson
+constructor()
+register()
+vote()
+winningProposal()
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## On-chain randomness
+
+* Blockchains are global, deterministic data-structures
+* Generating something unpredictable is impossible
+  * Everybody needs to generate the same value
+* What is vulnerability then?
+* <span class="highlight">Review Lottery Contract</span>
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Miner attacks
+
+* Even if you block contracts from calling it, your coin flip game is still vulnerable to miners
+* Miners control the exact construction of a block
+  * They can simulate running a transaction that bets on the Coin Flip Game
+  * Only include it in their blocks if it will win
+
 </script></section>
 
 <section data-markdown><script type="text/template">

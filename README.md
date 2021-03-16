@@ -7,3 +7,7 @@ If you want to view these slides on your own computer, clone the repository, swi
     git clone https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications.git
     cd Smart-Contracts-And-Decentralized-Applications
     git submodule update --init
+
+### TODO
+
+- [ ] Add assignments to course website
