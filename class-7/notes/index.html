@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 7: Introduction to Tokens in Ethereum & the ERC20 Standard 
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Standard Compliant Contract
+    * Tokens and Fungibility
+    * ERC20 token
+    * ICO
+</script></section>
+
+<section>
+  <h2>What's a token?</h2>
+  <ul>
+      <li>Blockchains have a native coin/token that the chain is built with. These coins/tokens are required to execute transactions, send data, are rewards for mining, etc.</li>
+      <li>But it may be possible to encode additional metadata in the chain which represents a token.</li>
+      <li>Depending on the chain, this can be easy or hard.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Why use tokens?</h2>
+  <ul>
+      <li>Say you want to issue share of stocks to the many co-founders (different percentages) for your new startup company that is yet to be registered</li>
+      <li>In the Ethereum world, you can represent the shares in the form of “tokens” that can be sold, sold back to the company, transferred, etc.</li>
+      <li>You can create a “token contract” and deploy it in Ethereum blockchain</li>
+      <ul>
+          <li>Then the tokens can be transferred, sold, etc.</li>
+      </ul>
+  </ul>
+</section>
+
+<section>
+  <h2>ERC-20 standard</h2>
+  <ul>
+      <li>Standard for transferring tokens and approving tokens to be spent by another on-chain contract</li>
+      <li>Details in</li>
+      <ul>
+          <li><a href="https://eips.ethereum.org/EIPS/eip-20">https://eips.ethereum.org/EIPS/eip-20</a></li>
+      </ul>
+  </ul>
+</section>
+
+<section>
+  <h2>ERC-20 tokens</h2>
+  <ul>
+      <li>ERC20 is a “token standard” for creating Ethereum token contracts</li>
+      <li>ERC stands for Ethereum Request for Comments</li>
+      <li>Any token contract that adheres to the specification follows ERC20</li>
+      <li>Can use with any wallets that understand ERC20</li>
+      <li>Most ICOs (Initial Coin Offerings) have adhered to ERC20</li>
+  </ul>
+</section>
+
+<section data-auto-animate>
+  <h2 data-id="code-title">ERC-20 Interface</h2>
+  <pre data-id="code-animation"><code class="hljs" data-trim>
+      interface IERC20 {
+          function name() public view returns (string memory);
+          function symbol() public view returns (string memory);
+          function decimals() public view returns (uint8);
+          function totalSupply() external view returns (uint256);
+          function balanceOf(address owner) external view returns (uint256 balance);
+          function transfer(address recipient, uint256 amount) external returns (bool success);
+          function transferFrom(address sender, address recipient, uint256 amount) external returns (bool success);
+          function approve(address spender, uint256 amount) external returns (bool success);
+          function allowance(address owner, address spender) external view returns (uint256 remaining);
+          event Transfer(address indexed sender, address indexed recipient, uint256 amount);
+          event Approval(address indexed owner, address indexed spender, uint256 amount);
+      }
+  </code></pre>
+</section>
+
+<section>
+<h2>ERC20 Mandatory functions</h2>
+</section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`totalSupply`**
+total supply of tokens
+![total supply](./totalSupply.png)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`balanceOf`**
+tokens an account own
+![balanceOf](./balanceOf.png)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`transfer`**
+transfer token from caller to another account
+![transfer](./transfer.png)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`approve`**
+approve another account to transfer token from your account
+<img src="./approve.png" width=900/>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`allowance`**
+how many token can an approved account transfer from your account
+<img src="./allowance.png" width=900/>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Mandatory Function : **`transferFrom`**
+transfer token on behalf of other account
+<img src="./safeTransferFrom.jpg" width=700/>
+</script></section>
+
+<section data-markdown><script type="text/template">
+  ## ERC-20 Optional Functions
+  * These are optional as they are mainly for improved
+  usability and display purposes on applications
+   - **`name()`**: a descriptive name of the token
+   - **`symbol()`**: a symbol of token
+   - **`decimals()`**: number of decimal the token uses. E.g. 8
+  decimals will divide the token amount by 108 to get it’s user representation
+</script></section>
+
+<section>
+<h2>ERC20 Events</h2>
+Events are only accessible by off-chain application; contracts do not have
+access to events
+</section>
+
+<section data-markdown><script type="text/template">
+  ### ERC-20 Event : **`Transfer`**
+  notification of token transfer :`transfer` and `transferFrom`
+  <img src="./transfer-event.jpg" width=700/>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### ERC-20 Event : **`Approval`**
+notification of token approval : `approve`
+<img src="./approve-event.png" width=700/>
+</script></section>
+
+<section>
+<h2>Demo : Standard ERC20 Token Contract</h2>
+</section>
+
+<section>
+<h2>ERC20 ICO</h2>
+<img src="approve_transferFrom_workflow.png"/>
+</section>
+
+<section>
+<h2>DEMO : Initial Coin Offering using ERC20</h2>
+</section>
+
+<section>
+  <h2>Examples of ERC-20 Tokens</h2>
+  <img src="erc-20-etherscan.png" width="800px">
+  <p class="credits"><a href="https://etherscan.io/tokens" target="_blank" >https://etherscan.io/tokens</a></p>
+</section>
+
+<section>
+  <h2>Recommended Resources</h2>
+  <ul>
+      <li>ERC20 - <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md">https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md</a></li>
+  </ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
