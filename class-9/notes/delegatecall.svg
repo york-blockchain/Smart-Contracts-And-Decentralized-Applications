@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
+ <defs>
+  <marker id="se_marker_start_svg_18" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto" refX="50" refY="50" se_type="leftarrow" viewBox="0 0 100 100">
+   <path d="m0,50l100,40l-30,-40l30,-40z" fill="#000000" stroke="#000000" stroke-width="10"/>
+  </marker>
+  <marker id="se_marker_end_svg_17" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto" refX="50" refY="50" se_type="rightarrow" viewBox="0 0 100 100">
+   <path d="m100,50l-100,40l30,-40l-30,-40z" fill="#000000" stroke="#000000" stroke-width="10"/>
+  </marker>
+ </defs>
+ <g class="layer">
+  <title>Layer 1</title>
+  <rect fill="#f9eed4" height="284.999992" id="svg_1" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="294.000005" x="17.5" y="60.87423"/>
+  <rect fill="#edc368" height="91" id="svg_4" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="124" x="173" y="136"/>
+  <rect fill="#edc368" height="91" id="svg_2" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="124" x="30.5" y="93.5"/>
+  <rect fill="#edc368" height="91" id="svg_3" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="124" x="35" y="217.687111"/>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_7" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="145.846117" xml:space="preserve" y="157.080392">Stack</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_6" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="148.085123" xml:space="preserve" y="216.214866">Memory</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_5" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -167.985 -179.3)" x="226.881977" xml:space="preserve" y="177.325149">Storage</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_8" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="149.202358" xml:space="preserve" y="106.838565">Contract A</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_20" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="366.5" xml:space="preserve" y="131.5">DelegateCall</text>
+  <rect fill="#f9eed4" height="284.999992" id="svg_13" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="171.000013" x="423.499997" y="60.874229"/>
+  <rect fill="#edc368" height="91" id="svg_15" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="124" x="440.5" y="93.499999"/>
+  <rect fill="#edc368" height="91" id="svg_14" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="null" width="124" x="444" y="217.68711"/>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_12" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="374.971919" xml:space="preserve" y="157.080021">Stack</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_11" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="377.210925" xml:space="preserve" y="216.214495">Memory</text>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_9" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" transform="matrix(1.78941 0 0 2.1 -166.985 -179.3)" x="367.151292" xml:space="preserve" y="106.83745">Contract  B</text>
+  <line fill="none" id="svg_17" marker-end="url(#se_marker_end_svg_17)" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" x1="312.499993" x2="411.500005" y1="151.5" y2="151.5"/>
+  <line fill="none" id="svg_18" marker-start="url(#se_marker_start_svg_18)" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="round" stroke-width="4" x1="322.500007" x2="418.499999" y1="240.5" y2="240.5"/>
+  <text fill="#000000" font-family="serif" font-size="17" id="svg_21" opacity="0.65" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" style="cursor: move;" text-anchor="middle" x="381" xml:space="preserve" y="224">Return</text>
+ </g>
+</svg>
