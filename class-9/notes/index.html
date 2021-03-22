@@ -1,0 +1,530 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 9: Interacting with blockchain
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Smart Contract calls
+    * Function encoding
+    * Low-level calls
+    * Call context
+    * The web3
+    * Graph protocol
+</script></section>
+
+<section>
+<h2>Contract to contract interactions</h2>
+<p>A contract calling function of another contract</p>
+<img src="./c-2-c.png"/>
+</section>
+
+<section data-markdown><script type="text/template">
+## Common Use Cases
+- Accessing data from another contract (e.g.oraclize)
+- Contract Wallet (e.g. UniversalLogin)
+- Meta Transaction (e.g. Gas Network Station)
+- Upgradability (e.g. Crypto Exchange)
+- Extensibility (e.g. ENS)
+</script></section>
+  
+<section data-markdown><script type="text/template">
+## function Encoding
+```
+function fun(bool xy) public pure returns (bytes4) {
+    return (this.fun.selector);
+}
+```
+Call with `fun(true)` gives following ABI encoding:
+
+<pre style="font-size: large;">
+<span style="color:red;">0xf1386ef7</span>0000000000000000000000000000000000000000000000000000000000000001
+</pre>
+<span style="color:red;">function selector</span> + value for xy
+* Refer the solidity <a href="https://docs.soliditylang.org/en/latest/abi-spec.html" target="_blank">docs</a> for more on encoding
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Low Level External Function Calls
+* `call`
+* `staticcall`
+* `delegatecall`
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Caller
+| **`tx.origin`** | **`msg.sender`** |
+| ------------------------------------------------------------------------- |:------------------------------------------------------:|
+| **`tx.origin`** is the sender of the transaction (full call chain) | **`msg.sender`** is the sender of the current message call    |
+</script></section>
+
+<section>
+<h2>Context</h2>
+<ul>
+<li>Context is the data/states available to the function at the time of execution</li>
+<li>EVM uses 3 areas to store data/states: storage, memory, stack</li>
+<li>Other context includes account states and message call states</li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+## `call`
+
+```
+(bool success, bytes memory returnData) 
+= feed.call.value(msg.value)(
+abi.encodeWithSignature("set(uint256)", newPrice));
+```
+
+* Returns `false` if the subcall encounters an exception, otherwise it returns `true`
+</script></section>
+
+<section>
+<h2>Non-Delegate Message Call</h2>
+<img src="non-delegate-call.png">
+</section>
+
+<section>
+<h2>Call context</h2>
+<img src="call-context.png">  
+</section>
+
+<section data-markdown><script type="text/template">
+## `delegatecall`
+* It is basically the same as `call`, except that code is run in the context of the calling contract
+
+```
+(bool success, bytes memory returnData) =
+feed.delegatecall(abi.encodeWithSignature(
+"set(uint256)", newPrice));
+```
+* The context is on Caller contract, all state change logics reflect on Caller’s storage.
+* The context is **NOT** on the user who execute caller contract but on caller contract.
+</script></section>
+
+<section>
+<h2>Delegate Message Call</h2>
+<img src="delegatecall.svg">
+</section>
+
+<section>
+<h2>Delegatecall context</h2>
+<img src="delegate-call-context.png">  
+</section>
+
+<section>
+<h2>Call V/s delegate Call Context</h2>
+<img src="sender-context.svg">
+</section>
+
+<section data-markdown><script type="text/template">
+## `staticcall`
+```
+(bool success, bytes memory returnData) 
+= feed.staticcall(abi.encodeWithSignature("get()"));
+```
+* Revert if the called function modifies the state
+* Enforces read-only call at runtime.
+* Do **NOT** use , if your contract’s state change requires a successful state change in another contract.
+* Use if a contract’s state change depends on reading data from another contract.
+* Returns `false` if subcall encounters exception, `true` otherwise
+</script></section>
+
+<section data-markdown><textarea data-template>
+### What is WEB3?
+*a collection of libraries that allows a user to interact with the Ethereum platform and smart contracts*
+* Different Implementations
+    * Python - web3.py
+    * Haskell - hs-web3
+    * Java - web3j
+    * Javascript - web3.js , ethers.js
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### What is RPC?
+*Remote Procedure Call (RPC) is a protocol that one program can use to <span class="highlightRed">request a service</span> from a program located in another computer in a network without having to understand network details.*
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### JSON-RPC API
+* JSON is a lightweight data-interchange format
+* RPC is used to make remote function calls
+* JSON-RPC - a stateless, lightweight RPC protocol.
+    * Defines several data structures and the rules around their processing.
+    * It is transport agnostic 
+        * Same concepts over sockets, HTTP, or in many various message passing environments
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### JSON-RPC call via `curl`
+```bash
+curl https://mainnet.infura.io/v3/86599c771d434ac3ba265546515812ed \
+-X POST \
+-H "Content-Type: application/json" \
+-d '{"jsonrpc":"2.0","method":"eth_blockNumber","params": [],"id":1}' 
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Ethereum ABI (1/2)
+***ABI = Application Binary Interface***
+* ABI - way to call functions and get data back
+* Binary information format to be passed one program component to the next
+* Why is it necessary?
+    * A way to specify which function to invoke as well data return type
+* Not part of the core Ethereum protocol, you can define your own ABI - but easier to comply with format provided by web3.js
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Ethereum ABI (2/2)
+***API = Application <span class="highlightRed">Programming</span> Interface***<br/>
+***ABI = Application <span class="highlightRed">Binary</span> Interface***
+* ABI is an API at a lower level?
+* Contract code is stored as bytecode in binary form on the blockchain under a specific address
+    * You can access the binary data in the contract through the ABI
+    * The ABI defines the structures and methods that you will use to interact with binary contract(just like an API)
+</textarea></section>
+
+
+<section data-markdown><textarea data-template>
+### Read/write to the chain using `web3.js`
+* Uses JSON RPC to talk to chain
+* Ethereum Node : Infura, Parity, Geth and more...
+<img src="Ethereum-rpc.png">
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Ethereum API library : `web3.js`
+* Official DApp API that run on all of the nodes
+    * Bridges to network using JSON-RPC calls
+* Main Capabilities:
+    * Interact with contract functions
+    * Deploy contracts
+    * Send data to contracts and initiate transactions
+    * Query the blockchain for data
+        * Has logged events by any contract + block data
+* Can have back-end on chain, and interface off chain
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Modules in `web3.js`
+- <a href="#web3-eth"><code>web3-eth</code></a>
+- <a href="#web3-shh"><code>web3-shh</code></a>
+- <a href="#web3-bzz"><code>web3-bzz</code></a>
+- <a href="#web3-net"><code>web3-net</code></a>
+- <a href="#web3-utils"><code>web3-utils</code></a>
+</textarea></section>
+
+<section id="web3-eth">
+<h3>Examples of <code>web3-eth</code></h3>
+<ul>
+    <li><code>web3.eth.getBalance</code> : balance of an address at a given block</li>
+    <li><code>web3.eth.signTransaction</code> : sign a transaction</li>
+    <li><code>web3.eth.sendSignedTransaction</code> : send a signed transaction to the Ethereum blockchain.</li>
+</ul>
+</section>
+
+<section id="web3-shh">
+<h3>Examples of <code>web3-shh</code></h3>
+<ul>
+    <li><code>web3.shh.post</code> : posts a whisper message to the network</li>
+    <li><code>web3.shh.subscribe</code> : creates a subscription to incoming whisper messages</li>
+</ul>
+</section>
+
+<section id="web3-bzz">
+<h3>Examples of <code>web3-bzz</code></h3>
+<ul>
+    <li><code>web3.bzz.upload</code> : upload files and folders to Swarm</li>
+    <li><code>web3.bzz.download</code> : download files and folders from Swarm</li>
+</ul>
+</section>
+
+<section id="web3-net">
+<h3>Examples of <code>web3-net</code></h3>
+<ul>
+    <li><code>web3.*.net.getID</code> : returns the network ID</li>
+    <li><code>web3.*.net.getPeerCount</code> : returns the number of peers that the node is connected to</li>
+</ul>
+</section>
+
+<section id="web3-utils">
+<h3>Examples of <code>web3-utils</code></h3>
+<ul>
+    <li><code>web3.utils.toWei</code> : converts Ether to Wei</li>
+    <li><code>web3.utils.hexToNumberString</code> : converts a hexadecimal value to a string</li>
+    <li><code>web3.utils.isAddress</code> checks if a given string is a valid Ethereum address.</li>
+</ul>
+</section>
+
+<section data-markdown><textarea data-template>
+### Creating the Web3 Object (1/2)
+```
+// in node.js use: const Web3 = require('web3');
+// use the given Provider, e.g in the browser with Metamask, 
+// or instantiate a new websocket provider
+const web3 = new Web3(Web3.givenProvider || 
+    'ws://localhost:8546', null, 
+    {});
+// or
+const web3 = new Web3(Web3.givenProvider || 
+    new Web3.providers.
+    WebsocketProvider('ws://localhost:8546'), 
+    null, {});
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Creating the Web3 Object (2/2)
+```
+const net = require('net'); // Using the IPC provider in node.js
+const web3 = new Web3(
+    '/Users/myuser/Library/Ethereum/geth.ipc', net, {}
+); // mac os path
+// or
+const web3 = new Web3(new Web3.providers.IpcProvider(
+    '/Users/myuser/Library/Ethereum/geth.ipc', 
+net, {})); // mac os path
+// on windows the path is: '\\\\.\\pipe\\geth.ipc' 
+// on linux the path is: '/users/myuser/.ethereum/geth.ipc'
+```
+</textarea></section>
+
+
+<section data-markdown><textarea data-template>
+### Creating Contract Objects
+```
+new web3.eth.Contract(jsonInterface, address, options)
+e.g. const myContract = new web3.eth.Contract(
+[...], '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe', 
+{});
+```
+</textarea></section>
+
+
+<section data-markdown><textarea data-template>
+### Contract Methods : view functions
+```
+myContract.methods.myMethod([param1[, param2[, 
+...]]]).call(transactionObject, blockNumber, callback])
+e.g.
+// using the promise
+myContract.methods.myMethod(123).call({
+    from: '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe'})
+.then((result) => {
+//...
+});
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Contract Methods : state changing functions
+```
+myContract.methods.myMethod([param1[, param2[, 
+...]]]).send(options[, callback])
+e.g.
+// using the promise
+myContract.methods.myMethod(123).send(
+    {from: '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe'})
+.then((receipt) => {
+    // receipt can also be a new contract instance, 
+    // when coming from a "contract.deploy({...}).send()"
+});
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### Handling Events
+```
+myContract.events.MyEvent([options][, callback])
+// Example
+myContract.events.MyEvent({
+    filter: {myIndexedParam: [20,23], 
+    myOtherIndexedParam: '0x123456789...'}, 
+    fromBlock: 0
+}, (error, event) => { console.log(event); })
+.on('data', (event) => {
+    console.log(event); // same results as the optional callback 
+                        // above
+    })
+.on('changed', (event) => {
+    // remove event from local database
+})
+.on('error', console.error);
+```
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### `web3.js` DEMO
+- The <a href="https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications/class-9/examples/web3-scripts/README.md" target="_blank">demo</a> contains sample node scripts to deploy, interact and listen contract events.
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### The Graph protocol
+<img src="graph-dataflow.png" width="600">
+</textarea></section>
+
+
+<section data-markdown><textarea data-template>
+### The Graph protocol
+* Indexing protocol for querying networks like Ethereum and IPFS.
+* Gets data in a readable format. 
+* Can build and publish open APIs, called subgraphs.
+* Used to query data using Graphql.
+* Navigate to <a href="https://thegraph.com/" target="_blank">The Graph</a> to access playground
+</textarea></section>
+
+<section data-markdown><textarea data-template>
+### AAVE flashloans data using the Graph DEMO
+- The <a href="https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications/class-9/examples/aave-graph/README.md" target="_blank">demo</a> contains sample scripts to interact with aave protocol via the Graph.
+</textarea></section>
+
+<section>
+<h2>Recommended Resources</h2>
+<ul>
+<li><a href="https://docs.soliditylang.org/en/latest/abi-spec.html" target="_blank">Contract ABI specification</a></li>
+<li><a href="https://web3js.readthedocs.io/en/latest/" target="_blank">https://web3js.readthedocs.io/en/latest/</a></li>
+<li><a href="https://docs.ethers.io/v5/" target="_blank">https://docs.ethers.io/v5/</a></li>
+<li><a href="https://thegraph.com/docs/" target="_blank">The Graph</a></li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
