@@ -1,5 +1,5 @@
 # Web3 nodejs scripts
-Sample node scripts that deploys and interacts with smart contract.
+Sample node script to interact with graph protocol.
 
 ## Getting started
 
