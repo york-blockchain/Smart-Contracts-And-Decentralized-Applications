@@ -1,0 +1,371 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 10: Full stack decentralized application
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Smart contract development 
+    * Truffle IDE
+    * Testing smart contracts
+    * Drizzle
+</script></section>
+
+<section>
+<h3>Dev Environment (Web)</h3>
+<ul>
+    <li>IDE - Remix</li>
+    <li>Dapp browsers- Metamask</li>
+    <li>Smart contract language - solidity</li>
+    <li>Simulator - ganache-cli</li>
+</ul>
+</section>
+
+<section>
+<h3>Dev Environment (Standalone)</h3>
+<ul>
+    <li>IDE - Visual Studio Code</li>
+    <li>Frameworks- Nodejs</li>
+    <li>Smart contract language - solidity</li>
+    <li>Test framework - Mocha/chai</li>
+    <li>Simulator - ganache-cli</li>
+    <li>Library - web3.js</li>
+    <li>Smart contract framework - Truffle</li>
+</ul>
+</section>
+
+<section>
+<h3>Truffle</h3>
+<ul>
+    <li>Contract compilation, linking, deployment and binary management</li>
+    <li>Automated testing and rapid development</li>
+    <li>Network management for deploying to public/private networks</li>
+    <li>Package management with EthPM and NPM</li>
+    <li>Interactive console for contract communication</li>
+    <li>Build pipeline supports tight integration</li>
+    <li>External script runner that executes scripts within truffle environment</li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+### Truffle
+* **Definition** : Truffle is a dApp framework that comes with both a testing unit and boilerplate code templates
+* **How to use it** : Install via the command line then use the command line to interact with Truffle
+* **Purpose** : Makes development on the blockchain very easy and allows for fast creation of applications. Truffle is a vital part of the workflow when creating dApps
+</script></section>
+
+<section>
+<h3>Truffle framework</h3>
+<ul>
+    <li>Creating a project</li>
+    <li>Exploring the project</li>
+    <li>Testing</li>
+    <li>Compiling</li>
+    <li>Migrating with ganache</li>
+    <li>Interacting with contract</li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+### Truffle installation
+```
+# NodeJS v8.9.4 or later
+$ npm install -g truffle
+
+// Command line interface, 
+// github.com/trufflesuite/ganache-cli/blob/master/README.md
+
+$ npm install -g ganache-cli
+
+// Ganache GUI installation: truffleframework.com/ganache/
+```
+</script></section>
+
+<section>
+<h3>Truffle - directory structure</h3>
+<ul>
+    <li><code><b>contracts/</b></code> : Directory for solidity contracts</li>
+    <li><code><b>migrations/</b></code> : Directory for scriptable deployment files</li>
+    <li><code><b>test/</b></code> : Directory for test files for testing your application and contracts</li>
+    <li><code><b>truffle-config.js</b></code> : Truffle configuration file</li>
+</ul>
+</section>
+
+
+<section data-markdown><script type="text/template">
+### `Migrations.sol`
+* Keeps track of which migrations were done on the current network.
+* Inside the migrations folder:
+  * `1_initial_migration.js` :  *1* is the reference number of a migration.
+  * *1* will be assigned to `last_completed_migration` of contract
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+### Ganache
+* **Definition** : Ganache is a personal blockchain deployed via the Ganache application
+* **How to use it** : Install it from the Ganache website or install the client with the command line
+* **Purpose** : Comes bundled with Truffle and often times is the first stage in the testing lifecycle for applications. It allows for local testing by providing ten accounts that each have “fake” ether in them
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+### Ganache
+* Simulates full Ethereum client behavior
+  * Accounts (addresses, private keys, etc.)
+* Crucial debugging and logging information
+* Block explorer and mining controls (block times, etc.)
+* Makes developing Ethereum applications much faster
+</script></section>
+
+<section>
+<h2>Test frameworks (Truffle use them under hood)</h2>
+<ul>
+<li><b>Mocha</b> : <a href="https://mochajs.org/">https://mochajs.org/</a> - Javascript testing framework</li>
+<li><b>Chai</b> : <a href="https://www.chaijs.com/">https://www.chaijs.com/</a> - Javascript Assertion library</li>
+</ul>
+</section>
+
+<section>
+<h2>Hooks in Mocha</h2>
+<ul>
+<li><code>before()</code> — Runs once before the first test case in the block</li>
+<li><code>beforeEach()</code> — Runs before each test case</li>
+<li><code>afterEach()</code> — Runs after each test case</li>
+<li><code>after()</code> — Runs once after the last test case in the block</li>
+</ul>
+<ul style="list-style: none;">
+<li>Sequence of Hooks</li>
+<ul style="list-style: none;">
+<li><code>before() -> beforeEach() -> test() -> afterEach() -> after()</code></li>
+</ul>
+</ul>
+</section>
+
+<section>
+<h2>Coverage</h2>
+<ul style="list-style-type: none;">
+<li>Given the nature of smart contract development, where data is literal value, testing practises needs to be stringent. 100% code coverage is not maximum to aim, its must.</li>
+</ul>
+</section>
+
+<section>
+<h2>Achieving 100% Coverage</h2>
+<ul>
+<li>Positive test</li>
+<ul>
+<li>Test that code behaves as expected when valid data is given.</li>
+</ul>
+<li>Negative tests</li>
+<ul>
+<li>Test that code behaves as expected when invalid data is given.</li>
+</ul>
+</ul>
+</section>
+
+<section>
+<h2>Read their test suites</h2>
+<ul>
+<li><a target="_blank" href="https://github.com/trufflesuite/devcon5-honeypot-exploration">devcon5-honey-exploration</a></li>
+<li><a target="_blank" href="https://github.com/0xProject/dev-tools-truffle-example">dev-tools-truffle-example</a></li>
+<li><a target="_blank" href="https://github.com/OpenZeppelin/openzeppelin-contracts">openzeppelin-contracts</a></li>
+</ul>
+</section>
+
+<section>
+<h2>Tools</h2>
+<ul>
+<li>Linting</li>
+<ul>
+  <li><a href="https://protofire.github.io/solhint/">https://protofire.github.io/solhint/</a></li>
+</ul>
+<li>Coverage</li>
+<ul>
+<li><a href="https://github.com/sc-forks/solidity-coverage">https://github.com/sc-forks/solidity-coverage</a></li>
+</ul>
+<li>Helpers and utilities</li>
+<ul>
+  <li><a href="https://github.com/OpenZeppelin/openzeppelin-test-helpers">https://github.com/OpenZeppelin/openzeppelin-test-helpers</a></li>
+  <li><a href="https://sol-profiler.com/">https://sol-profiler.com/</a></li>
+  <li><a href="https://github.com/cgewecke/eth-gas-reporter#readme">https://github.com/cgewecke/eth-gas-reporter#readme</a></li>
+</ul>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+### Drizzle
+
+*  **Definition** : Collection of front-end libraries with Redux store. It is declarative and maintains state  
+* **How to use it** : Install in the react application  via the command line.
+* **Purpose** : Synchronizes contract data, transaction data etc to keep things stay fast.
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Drizzle installation
+```
+# state manager of drizzle
+$ npm install --save @drizzle/store
+
+# Drizzle Provider for a React project
+$ npm install --save @drizzle/react-plugin
+
+# collection of primitive web controls
+$ npm install --save @drizzle/react-components
+```
+</script></section>
+
+
+<section>
+<h2>Recommended Resources</h2>
+<ul>
+<li><a href="https://www.trufflesuite.com/docs/truffle/overview" target="_blank">Truffle docs</a></li>
+<li><a href="https://www.trufflesuite.com/docs/drizzle/overview" target="_blank">Drizzle</a></li>
+<li><a href="https://www.trufflesuite.com/docs/ganache/overview" target="_blank">Ganache docs</a></li>
+<li><a href="https://mochajs.org/" target="_blank">Mocha</a></li>
+<li><a href="https://www.chaijs.com/" target="_blank">Chai</a></li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
