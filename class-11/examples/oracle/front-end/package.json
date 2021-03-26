@@ -1,0 +1,29 @@
+{
+  "name": "oracle-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications.git/issues"
+  },
+  "homepage": "https://github.com/york-blockchain/Smart-Contracts-And-Decentralized-Applications.git/class-11/examples/oracle/Oracle#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^2.4.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}

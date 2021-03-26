@@ -1,0 +1,739 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Smart Contracts And Decentralized Applications</title>
+
+    <meta name="author" content="Dhruvin Parikh">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="../../reveal.js/css/reveal.css">
+    <link rel="stylesheet" href="../../reveal.js/css/theme/black.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../../reveal.js/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js/css/print/pdf.css' : '../../reveal.js/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="../reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <style>
+      .reveal .slides h1, .reveal .slides h2, .reveal .slides h3 {
+        text-transform: none;
+      }
+
+      .two-column {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .two-column em {
+        margin: 20px;
+      }
+
+      .reveal .big-and-bold {
+        font-weight: bold;
+        font-size: 135%;
+      }
+
+      .reveal .shrunk-a-bit {
+        font-size: 90%;
+      }
+
+      .reveal .shrunk-a-bit pre {
+        width: 100%;
+      }
+
+      .reveal pre {
+        width: 100%;
+      }
+
+      .reveal .highlight {
+        color: yellow;
+        font-weight: bold;
+      }
+
+      .reveal .highlightRed {
+        color: red;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+<!------------------------------------------------------->
+
+
+
+<section data-markdown><script type="text/template">
+
+## CSBC 2010 - Smart Contracts And Decentralized Applications
+
+### Class 12: Advanced Smart Contracts - II
+
+*Dhruvin Parikh*
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Class Plan
+* Smart Contract Security
+    * Vulnerabilities patterns
+    * Mitigation
+    * Analysis tools
+* Applications
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Threat models
+
+* Model 1: Contract writer is trusted
+    * Must worry about all bugs we've discussed so far (overflows, function visibility, etc)
+* Model 2: Contract writer may be malicious
+    * Must worry about everything in model 1, as well as possibility contract writer added a hidden back-door
+    * *Underhanded* contracts
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Obvious back-door
+
+<pre class="hljs js">
+    function soLongSuckers() public onlyOwner {
+        owner.transfer(address(this).balance);
+    }
+</pre>
+
+<img src="solongsuckers.png" />
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## What about this?
+
+<pre class="hljs js">
+    uint256 ownerReward = 1 ether;
+
+    function claimOwnerReward(uint256 amount) public onlyOwner {
+        require(amount <= ownerReward, "too much");
+        ownerReward =- amount;
+        owner.transfer(amount);
+    }
+</pre>
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Plausible deniability
+
+<pre class="hljs js">
+    uint256 ownerReward = 1 ether;
+
+    function claimOwnerReward(uint256 amount) public onlyOwner {
+        require(amount <= ownerReward, "too much");
+        ownerReward <span class="highlightRed">=-</span> amount;
+        owner.transfer(amount);
+    }
+</pre>
+
+* Should be `-=`, not `=-`
+* This bug lets owner steal all ETH in contract
+    * How?
+* If detected beforehand, owner can claim:
+    * *Oops sorry. It was just a typo, I wasn't trying to steal anything, I promise*
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Contract upgrades
+
+* Some contracts are designed to be *upgradeable*
+    * **Good**: Owner can fix bugs in the contract before bad guys can exploit them
+    * **Bad**: If owner is a bad guy, can add back-doors
+* Because a contract's code cannot be changed, upgradeable contracts are implemented using *proxy contracts* (contracts that call other contracts)
+    * An upgrade changes the contract address that the proxy will call
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Withdrawal pattern
+
+* It is better to record how much is owed to each address:
+<pre class="hljs js">
+    owed[addr1] += payout1;
+    owed[addr2] += payout2;
+</pre>
+* Then let each address withdraw their payouts in separate transactions:
+<pre class="hljs js">
+    function withdraw() public {
+        uint256 amount = owed[msg.sender];
+        owed[msg.sender] = 0;
+        msg.sender.transfer(amount);
+    }
+</pre>
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Single-use contracts
+
+<pre class="hljs js">
+contract SingleUseContract {
+    constructor() public payable {
+
+        // do operations
+
+        <span class="highlight">selfdestruct(msg.sender);</span>
+    }
+}
+</pre>
+
+* Perform operations in a contract's constructor, and then `selfdestruct` when finished
+    * One of the few valid use cases for `selfdestruct`: gas refund for single-use contracts
+* Like a "throw-away account"
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Beating the house
+
+* Many dApps that depend on randomness have [been found vulnerable](https://blog.positive.com/predicting-random-numbers-in-ethereum-smart-contracts-e5358c6b8620)
+* How about the Lottery contract we reviewed previously?
+    * Consider what is possible with a single-use contract
+    * Note that conditions can be checked after calling a contract, and can optionally revert the entire transaction
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Detecting contract callers
+
+* Can we detect if the caller is a contract?
+* Attempt 1 (from [Fomo 3D](https://www.reddit.com/r/ethereum/comments/916xni/how_to_pwn_fomo3d_a_beginners_guide/)):
+<pre class="hljs js">
+    modifier isHuman() {
+        address _addr = msg.sender;
+        uint256 _codeLength;
+
+        assembly {_codeLength := extcodesize(_addr)}
+        require(_codeLength == 0, "sorry humans only");
+        _;
+    }
+</pre>
+
+    * Doesn't work: code size is 0 inside a contract's constructor
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Detecting contract callers (2)
+
+* Attempt 2:
+<pre class="hljs js">  
+    modifier isHuman() {
+        require(tx.origin == msg.sender, "sorry humans only");
+        _;
+    }
+</pre>
+
+    * Works, but:
+    * "Legitimate" contract users cannot use your contract (ex: multi-sig wallets)
+    * Ethereum will eventually get rid of `tx.origin`
+        * Account abstraction
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Commitment schemes
+
+* All is not lost...
+* There *is* a way to create secure randomness on-chain: *commit-reveal protocol*
+    * Cryptographic protocol for 2 or more parties to come to a consensus on a value they all can agree is random
+    * 2 phases: commit phase, reveal phase
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Commit phase
+
+* Assume two parties: A, B
+* Each generates a secret random value
+    * A generates r<sub>A</sub>
+    * B generates r<sub>B</sub>
+* They exchange hashes of their secrets
+    * A sends H(r<sub>A</sub>) to B
+    * B sends H(r<sub>B</sub>) to A
+* Commit phase ends and reveal phase begins...
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Reveal phase
+
+* They now exchange their random values and verify the hashes
+    * Now that r<sub>B</sub> is public, A computes H(r<sub>B</sub>) and verifies it's same as was received in commit phase
+    * B does the same with r<sub>A</sub>
+* Now that both parties have securely shared r<sub>A</sub> and r<sub>B</sub>, these values are combined into the final output
+    * Ways to combine: xor ($\oplus$), `+`, `H(A . B)`
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Commit-reveal security
+
+* This works because the randomness depends on both r<sub>A</sub> and r<sub>B</sub>
+* Each party needs to commit to their random number before they can see the other random numbers
+* As long as there is sufficient block-time between the commit and reveal phases, miners have no influence
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Failure to reveal
+
+* During the reveal phase, one party will see the other revealed numbers first
+* If this party's outcome is bad, they could choose to not reveal their secret number
+* The punishment for failing to reveal should be at least as bad as a losing outcome
+    * Same for other protocol violations
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Copied commitment
+
+* During the commit phase, one party could submit *the same hash* as the other party
+    * Depending on how the secrets are combined, output may be predictable
+    * $r \oplus r = 0$
+    * $r + r \bmod 2 = 0$
+    * Solution: Use non-predictable combine method, or prevent copied commitments in the protocol
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Zero-Knowledge Proofs
+
+* Imagine there are 2 copies of a photograph and there is a small difference between them
+* I see the difference but you don't
+* How can I prove that I see the difference to you without revealing what the difference is?
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## Interactive protocols
+
+* I give you the photos in a particular order
+* You take the photos behind your back and either swap them or not (choose randomly)
+* I tell you whether you swapped them or not
+    * If I'm wrong, I couldn't tell the difference
+    * If I'm right, maybe I could
+* Iterated protocol: Repeat this 1000 times
+    * If I'm right every time you can be pretty sure I can tell the difference
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Re-entrancy
+
+* When a contract calls itself (usually indirectly)
+* If a contract is in the middle of an operation and it unexpectedly starts a new operation, this can be security problem
+* Typical flow:
+    * Contract A calls contract B
+    * Contract B calls *back into* contract A
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Global variables
+
+* Global variables are usually the root of the problem
+* Contract storage is a global variable
+    * It could be in an inconsistent state when calling other contracts
+* Not specific to smart contracts
+    * Any programming language with callbacks and global variables has this issue
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Deadlock (pseudo-code)
+
+    let globalLock = false;
+
+    function doOperation(callback) {
+        waitForGlobalLock();
+        globalLock = true;
+
+        let result = doSomeStuff();
+        callback(result);
+
+        globalLock = false;
+    }
+
+Suppose it's called like this:
+
+    doOperation((result) => {
+        doOperation((result) => {
+            console.log("Did 2 operations");
+        });
+    });
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## The DAO
+
+* "Decentralized Autonomous Organization"
+* Basically a corporation, but on the blockchain
+* Was hacked for $50M
+    * Most famous Ethereum security bug
+    * Resulted in Ethereum Classic fork
+    * Bug was due to unanticipated re-entrancy
+
+</script></section>
+
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## The DAO Bug
+
+    function withdraw(uint amount) public {
+        require(balance[msg.sender] >= amount, "no balance");
+        msg.sender.call{value:amount}("");
+        balance[msg.sender] -= amount;
+    }
+
+* As mentioned, `.call` forwards unlimited gas
+    * So, if `msg.sender` is a contract, its fallback function can do lots of stuff
+    * Including calling `withdraw` *again*
+    * Let's walk through what would happen...
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Attack call-stack
+
+<pre class="hljs js">
+Hacker contract: <span class="highlightRed">dao.deposit.value(10)()</span>
+Hacker contract: <span class="highlightRed">dao.withdraw(10)</span>
+        The DAO:   msg.sender.transfer(10)
+Hacker fallback:     <span class="highlightRed">dao.withdraw(10)</span>
+        The DAO:       msg.sender.transfer(10)
+Hacker fallback:         <span class="highlightRed">dao.withdraw(10)</span>
+        The DAO:           msg.sender.transfer(10)
+        The DAO:           balance[msg.sender] -= 10
+        The DAO:       balance[msg.sender] -= 10
+        The DAO:   balance[msg.sender] -= 10
+</pre>
+
+* Hacker deposits 10 but withdraws 30
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Re-entrancy guard
+
+<pre class="hljs js">
+    bool private locked = false;
+
+    modifier nonReentrant() {
+        require(!locked, "re-entrancy detected");
+        locked = true;
+        _;
+        locked = false;
+    }
+</pre>
+
+* Good solution, but adds 5,000 gas to each call
+    * Will be almost free if [EIP-1283](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1283.md) deployed
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Preserve invariants
+
+* Best solution: helps in many ways
+* An invariant is something that should always be true
+* In the DAO example, the invariant is that `balance[msg.sender]` always holds the amount owed to `msg.sender`
+    * Violated: Contract balance was debited but `balance` mapping in storage was not
+* Always leave storage in a consistent state when calling other contracts
+
+</script></section>
+
+
+
+
+<section data-markdown><script type="text/template">
+
+## Checks-Effects-Interactions
+
+    function withdraw(uint amount) public {
+        // Checks
+        require(balance[msg.sender] >= amount, "no balance");
+
+        // Effects
+        balance[msg.sender] -= amount;
+
+        // Interactions
+        msg.sender.transfer(amount);
+    }
+
+* Called the [CEI pattern](https://solidity.readthedocs.io/en/latest/security-considerations.html#use-the-checks-effects-interactions-pattern)
+* Note the order of last two operations was swapped from The DAO's version
+* Demo : HackSimpleDAO.sol
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Denial of Service
+
+* An attack made to contract that makes it unusable
+* It occurs due to unexpected `revert`
+    * `receive` or `fallback` reverts on every payment.
+* `fallback`/`receive` consuming all gas
+    * `assert(false)`  
+* Use pull payment pattern to mitigate
+* Demo : GameDoS.sol
+</script></section>
+
+
+<section>
+    <h2>Static Analysis</h2>
+    <ul>
+        <li>Static Analysis is performed by reviewing the source code without running the program</li>
+        <li>It is mostly for ensuring proper coding standards, best practices, syntax errors, etc</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Static Analysis : tools</h2>
+    <ul>
+        <li><a target="_blank" href="https://remix-ide.readthedocs.io/en/latest/static_analysis.html#solidity-static-analysis">Solidity Static Analysis</a> - Remix Plugin</li>
+        <li><a target="_blank" href="https://contract.guardstrike.com/#/scan">sFuzz</a> - fuzzer to find common vulnerabilities</li>
+        <li><a target="_blank" href="https://github.com/smartdec/smartcheck">SmartCheck</a> - sc vulnerabilities and bugs detector</li>
+        <li><a target="_blank" href="https://github.com/crytic/slither">slither</a> - Solidity static analyzer</li>
+        <li><a target="_blank" href="https://github.com/crytic/echidna">echidna</a> - rapid sc fuzzer</li>
+        <li><a target="_blank" href="https://github.com/eth-sri/securify2">Securify</a> - Solidity security static analyzer </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Dynamic Analysis</h2>
+    <ul>
+        <li>Analysis is performed by executing the program</li>
+        <li>Unit testing is a type of dynamic analysis</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Dynamic Analysis</h2>
+    <ul>
+        <li><a target="_blank" href="https://www.trufflesuite.com/docs/truffle/testing/testing-your-contracts#testing-your-contracts">Truffle tests</a></li>
+        <li><a target="_blank" href="https://github.com/JoranHonig/vertigo">Vertigo</a> - Mutation testing for Ethereum smart contracts</li>
+        <li><a target="_blank" href="https://remix-ide.readthedocs.io/en/latest/unittesting.html#write-tests">Unit Testing Plugin</a> - Remix Plugin</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Limitations</h2>
+    <ul>
+        <li>All tools still have limitations</li>
+        <li>Not all vulnerabilities can be found by analysis</li>
+        <li>Not scalable to large or complex programs</li>
+        <li>Still need to do manual auditing and testing</li>
+    </ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+## Decentralized Finance
+
+* DeFi: Financial systems built with smart contracts as the platform for enforcing rules, instead of legal system
+* The intersection of economics and blockchain technology
+* Benefits are: transparent and permissionless
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Flash Loans
+
+* Imagine you write a cheque to buy something, then you sell it for a profit and receive a new cheque
+* As long as you deposit your new cheque before the cheque you wrote clears, you don't need any balance in your account!
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Flash Loans on Ethereum
+
+* On Ethereum, it works like this:
+    * A borrower requests a lending contract to send some ETH or tokens
+    * The lender sends the tokens, then invokes a callback into the borrower's code
+    * When the borrower's callback returns, the lender verifies that the funds were returned (plus fees)
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+
+## Example Flash Lender
+
+    function flashLoan(uint amount) {
+        uint origBalance = this.balance;
+
+        msg.sender.transfer(amount);
+
+        // Invoke a function on the caller
+        IFlashLoan(msg.sender).onFlashLoan();
+
+        // Make sure the function paid us back
+        require(this.balance >= origBalance);
+    }
+
+</script></section>
+
+
+<section>
+  <h2>Recommended Resources</h2>
+  <ul>
+  <li><a href="https://consensys.github.io/smart-contract-best-practices/" target="_blank">Ethereum Smart Contract Security Best Practices</a></li>
+  <li><a href="https://swcregistry.io/" target="_blank">Smart Contract Weakness Classification and Test Cases</a></li>
+  </ul>
+</section>
+
+<section data-markdown><script type="text/template">
+
+## End of Class
+
+</script></section>
+
+
+<!------------------------------------------------------->
+
+
+      </div>
+
+    </div>
+
+    <script src="../../reveal.js/lib/js/head.min.js"></script>
+    <script src="../../reveal.js/js/reveal.js"></script>
+    <script src="../../reveal.js/plugin/zoom-js/zoom.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+
+	math: {
+          mathjax: '../lib/MathJax/MathJax.js',
+          config: 'TeX-AMS_SVG-full',
+	},
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: '../../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: '../../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: '../../reveal.js/plugin/math/math.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
