@@ -95,7 +95,7 @@
 <section data-markdown><script type="text/template">
 ## `$WHOAMI`  
 - I am fullstack javascript developer, blockchain developer and an Instructor  
-- Senior Blockchain Developer at opty.fi
+- CTO & Senior Blockchain Developer at opty.fi
 - Also Adjunct Professor at George Brown College in Blockchain Development Program 
 </script></section>
 
@@ -151,9 +151,9 @@
 * A programming language, like C++ or Python or Javascript
 * But designed specially for smart contracts
 * Compiles to a special machine called the Ethereum Virtual Machine (EVM) 
+* remix.ethereum.org is a recommended Solidity Editor to start learning Solidity 
 
 </script></section>
-
 
 
 <section data-markdown><script type="text/template">
@@ -162,6 +162,62 @@
 
 </script></section>
 
+<section data-markdown><script type="text/template">
+
+## EVM
+
+* The EVM (Ethereum Virtual Machine) is a “mini computer” on your computer that runs contract code
+* Contract code that actually gets executed on every node is EVM code
+* EVM code: low-level, stack based bytecode language (i.e. JVM bytecode)
+* Every Ethereum node runs EVM 
+ 
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## What if our contract has an infinite loop?
+
+* Every node on the network will get stuck executing the loop forever! 
+* By the halting problem, it is impossible to determine ahead of time whether the contract will ever terminate 
+  * Lead to: **Denial of Service (DoS)** Attack 
+* Solution is Gas.   
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+## EVM and Gas
+
+* Every contract requires “gas”, which “fuels” contract execution 
+* Every EVM operation-code requires some gas in order to execute 
+* Every transaction specifies: 
+    * gasLimit: Max quantity of gas it is willing to consume 
+    * gasPrice: Fee in ether it is willing to pay per unit gas  
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## EVM and Gas
+
+* At the start of the transaction
+  gasLimit * gasPrice (units = ether) are subtracted from the sender's  account (the one “poking” the contract)
+* If the contract successfully executes...
+    * the remaining gas is refunded to the sender
+* If the contract execution runs out of gas before it finishes...
+  * execution reverts
+* gasLimit * gasprice are not refunded
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+  ## EVM and Gas
+  
+  * Purchasing gas == purchasing distributed, trustless computational power
+  * An attacker looking to launch a DoS attack will need to supply enough  ether to fund the attack
+  
+  </script></section>
 
 
 <section data-markdown><script type="text/template">
@@ -170,16 +226,16 @@
 
 ```
     // SPDX-License-Identifier: MIT
-    pragma solidity ^0.6.10;
+    pragma solidity ^0.8.12;
     contract MyContractName {
         // code goes here
     }
 ```
-
+* `SPDX-License-Identifier:` : a comment indicating its license (must)
 * `pragma` line: What version of solidity you want
-  * We'll leave this out of examples, but you should always have it in your code
+  * you should always have it in your code
   * Use at least `0.6.10`: This course does not cover security issues of earlier versions
-* `contract`: Everything inside the curly braces is your contract
+* `contract`: Everything inside the curly braces
 
 </script></section>
 
@@ -513,6 +569,15 @@ contract Counter {
 
 * The indexed parameters for logged events will allow you to search for these events using the indexed parameters as filters.
     
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Further Reading
+* [Conversions between Elementary Types](https://docs.soliditylang.org/en/latest/types.html#conversions-between-elementary-types)
+* [Conversions between Literals and Elementary Types
+](https://docs.soliditylang.org/en/latest/types.html#conversions-between-literals-and-elementary-types)
+
 </script></section>
 
 
