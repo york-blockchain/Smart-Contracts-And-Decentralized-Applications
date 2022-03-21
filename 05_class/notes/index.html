@@ -96,9 +96,24 @@
 
 ## Class Plan
 * Solidity Smart Contracts
+    * Constant and Immutable state variables
     * Payable Smart Contracts
     * Contract Factory
     * Exception Handling
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## `constant` and `immutable`
+
+* the variables cannot be modified after the contract has been constructed
+* For `constant` variables, the value has to be fixed at **compile-time**
+* For `immutable` variables, the value may be assigned at construction time
+```
+bytes32 constant MY_HASH = keccak256("abc");
+uint immutable decimals;
+```
+
 </script></section>
 
 <section data-markdown><script type="text/template">
