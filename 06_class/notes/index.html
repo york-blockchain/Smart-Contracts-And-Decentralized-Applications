@@ -96,10 +96,10 @@
 
 ## Class Plan
 * Solidity Smart Contracts
-    * Function types
     * Fallback function
     * Overriding function modifier
     * Function overloading and overriding
+    * Function types
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -427,6 +427,40 @@ winningProposal()
   * Everybody needs to generate the same value
 * What is vulnerability then?
 * <span class="highlight">Review Lottery Contract</span>
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Function Types
+
+* Function types are the types of functions. 
+* Variables of function type can be assigned from functions and function parameters of function type can be used to pass functions to and return functions from function calls. 
+* Function types come in two flavours - `internal` and `external` functions,
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Internal Function Type
+
+* Internal functions can only be called inside the current contract (more specifically, inside the current code unit, which also includes internal library functions and inherited functions) because they cannot be executed outside of the context of the current contract. 
+* Calling an internal function is realized by jumping to its entry label, just like when calling a function of the current contract internally.
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## External Function Type
+
+* External functions consist of an address and a function signature and they can be passed via and returned from external function calls.
+
+<br/>*"By default, function types are internal, so the internal keyword can be omitted. Note that this only applies to function types. Visibility has to be specified explicitly for functions defined in contracts, they do not have a default."*
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Function Type Code Examples
+
+* Example that shows internal function type.
+* Example that shows external function type.
 </script></section>
 
 <section data-markdown><script type="text/template">
