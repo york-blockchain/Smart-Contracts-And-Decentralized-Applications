@@ -25,7 +25,7 @@ const _number = new BigNumber(2);
 const simplestorageContract = new web3.eth.Contract(abi);
 
 // estimateGas and deploy contract
-simplestorageContract
+simplestorageContract // deploy bytecode
   .deploy({
     data: `0x${bytecode}`,
     arguments: [_number],
@@ -65,3 +65,4 @@ simplestorageContract
 // deployed at 0xA78B7C039DfF2065e5F621e747D59798e16D65a0 on rinkeby
 // deployed another at 0xa6F2d14748Ef0FF530f86E2b174f45503f2a520A on rinkeby 
 // deployed another at 0x88F86Fee7bBf211d513FB657a3bcBc35b0a37160 on rinkeby 
+// deployed another at 0x4F804Fa85E49BB2451afEEf166D49C9236EAbb87 on rinkeby
