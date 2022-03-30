@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-axios.post('https://api.thegraph.com/subgraphs/name/aave/protocol', {
+axios.post('https://api.thegraph.com/subgraphs/name/aave/protocol-v2', {
   query: `
   {
     flashLoans(first: 10, orderBy: timestamp, orderDirection: desc) {
