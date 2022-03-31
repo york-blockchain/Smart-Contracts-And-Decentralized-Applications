@@ -8,17 +8,25 @@ contract ReceiverPays {
     mapping(uint256 => bool) usedNonces;
 
     // Funds are sent at deployment time.
-    constructor() public payable { }
+    constructor() public payable {}
 
-
-    function claimPayment(uint256 amount, uint256 nonce, bytes memory sig) public {
-        require(!usedNonces[nonce],"ReceiverPays: nonce already used");
+    function claimPayment(
+        uint256 amount,
+        uint256 nonce,
+        bytes memory sig
+    ) public {
+        require(!usedNonces[nonce], "ReceiverPays: nonce already used");
         usedNonces[nonce] = true;
 
         // This recreates the message that was signed on the client.
-        bytes32 message = prefixed((keccak256(abi.encodePacked(msg.sender, amount, nonce, this))));
+        bytes32 message = prefixed(
+            (keccak256(abi.encodePacked(msg.sender, amount, nonce, this)))
+        );
 
-        require(recoverSigner(message, sig) == owner,"ReceiverPays: not verified");
+        require(
+            recoverSigner(message, sig) == owner,
+            "ReceiverPays: not verified"
+        );
 
         msg.sender.transfer(amount);
     }
@@ -29,15 +37,18 @@ contract ReceiverPays {
         selfdestruct(msg.sender);
     }
 
-
     // Signature methods
 
     function splitSignature(bytes memory sig)
         internal
         pure
-        returns (uint8, bytes32, bytes32)
+        returns (
+            uint8,
+            bytes32,
+            bytes32
+        )
     {
-        require(sig.length == 65,"ReceiverPays: signature length mismach");
+        require(sig.length == 65, "ReceiverPays: signature length mismach");
 
         bytes32 r;
         bytes32 s;
@@ -72,6 +83,9 @@ contract ReceiverPays {
 
     // Builds a prefixed hash to mimic the behavior of eth_sign.
     function prefixed(bytes32 hash) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+        return
+            keccak256(
+                abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)
+            );
     }
 }
